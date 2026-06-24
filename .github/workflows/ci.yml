@@ -10,6 +10,40 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: urlshortener
+          POSTGRES_USER: urlshortener_user
+          POSTGRES_PASSWORD: urlshortener_pass
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -U urlshortener_user -d urlshortener"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6381:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5434
+      DB_NAME: urlshortener
+      DB_USERNAME: urlshortener_user
+      DB_PASSWORD: urlshortener_pass
+      REDIS_HOST: localhost
+      REDIS_PORT: 6381
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
